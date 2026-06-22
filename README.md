@@ -64,12 +64,26 @@ GitHub Actions CI · Tailwind (minimal). Deploy: Vercel (optional).
 This repo is being built in phases, one reviewable concern per pull request. The decision records come first so
 the code that follows can reference a settled rationale.
 
-- [x] **Phase 0 — Decision records.** All seven ADRs in [`docs/adr/`](docs/adr/) + this README.
-- [ ] **Phase 1 — Scaffold + shared core.** Next.js app; `schema.ts` / `scoring.ts` / `reflect.ts` + unit tests.
+- [x] **Phase 0 — Decision records.** Eight ADRs in [`docs/adr/`](docs/adr/) + this README.
+- [x] **Phase 1 — Scaffold + shared core.** Next.js (strict TS) app; the framework-free core
+  ([`schema.ts`](src/lib/shared/schema.ts) / [`scoring.ts`](src/lib/shared/scoring.ts) /
+  [`reflect.ts`](src/lib/shared/reflect.ts)) with thresholds in [`config/thresholds.ts`](config/thresholds.ts);
+  Vitest unit tests including the four reflect cases (hallucinated id, dropped critical item, number/risk
+  mismatch, "model confident but blocked").
 - [ ] **Phase 2 — Database.** Migrations, RLS policies, seed, cross-tenant test.
 - [ ] **Phase 3 — Edge function orchestrator.** The four-phase Deno function, two validated Claude calls.
 - [ ] **Phase 4 — Dashboard + patient review UI.**
 - [ ] **Phase 5 — Eval harness + CI.**
 
-> Setup and run instructions will be added with Phase 1, once `package.json` and the Supabase config exist —
-> they are intentionally omitted now rather than documenting commands that don't yet work.
+## Getting started
+
+```bash
+npm install
+npm run dev          # Next.js dev server
+npm test             # Vitest unit tests (scoring + reflect + schema)
+npm run typecheck    # tsc --noEmit (strict)
+npm run lint         # eslint
+```
+
+> Supabase setup (migrations, RLS, seed) and the edge function arrive in Phases 2–3; Supabase-specific run
+> steps will be documented alongside them rather than before the code that backs them exists.
