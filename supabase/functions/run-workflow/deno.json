@@ -1,0 +1,9 @@
+{
+  "imports": {
+    "@core/": "../../../src/lib/shared/",
+    "@config/": "../../../config/",
+    "zod": "npm:zod@4.4.3",
+    "@anthropic-ai/sdk": "npm:@anthropic-ai/sdk@0.105.0",
+    "@supabase/supabase-js": "npm:@supabase/supabase-js@2.108.2"
+  }
+}
