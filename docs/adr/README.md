@@ -22,3 +22,4 @@ The two that best show the engineering judgment:
 | [0005](0005-scope-boundaries-and-deferred-features.md) | Scope boundaries and deferred features | Accepted |
 | [0006](0006-edge-function-and-auth-posture.md) | Edge Function invocation and auth posture | Accepted |
 | [0007](0007-shared-core-across-deno-node-boundary.md) | Shared pure-logic core across the Deno/Node boundary | Accepted |
+| [0008](0008-illustrative-non-clinical-thresholds.md) | Scoring/safety thresholds are illustrative, non-clinical defaults | Accepted |
