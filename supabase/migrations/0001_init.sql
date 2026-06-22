@@ -102,13 +102,21 @@ create table audit_log (
 -- function runs as the calling user and auth.uid() resolves to them.
 -- ----------------------------------------------------------------------------
 
-create or replace function app_user_orgs()
+-- SECURITY DEFINER so the helper reads memberships as its owner, bypassing RLS
+-- *inside the function only* — this breaks the otherwise-infinite recursion
+-- (memberships' own RLS policy calls this function; see ADR-0003 / error 54001).
+-- Hardened: SET search_path = '' (an unpinned search_path on a SECURITY DEFINER
+-- function is a privilege-escalation vector), every reference schema-qualified,
+-- and (select auth.uid()) for per-statement caching. The function is parameterless
+-- and filtered to the caller's auth.uid(), so it leaks nothing across tenants.
+create or replace function public.app_user_orgs()
   returns setof uuid
   language sql
-  security invoker
+  security definer
+  set search_path = ''
   stable
 as $$
-  select org_id from memberships where user_id = auth.uid()
+  select org_id from public.memberships where user_id = (select auth.uid())
 $$;
 
 -- Enable RLS on every tenant-scoped table named in §6.
@@ -146,7 +154,34 @@ create policy alerts_rw on alerts
   for all using (org_id in (select app_user_orgs()))
           with check (org_id in (select app_user_orgs()));
 
+-- ----------------------------------------------------------------------------
+-- Grants — the API roles need table privileges or PostgREST gets "permission
+-- denied" before RLS is ever consulted. (Supabase auto-grants these for tables
+-- made via the dashboard; a hand-written migration must do it explicitly.)
+-- Row visibility is still governed by RLS above; these are table-level grants.
+-- ----------------------------------------------------------------------------
+
+grant usage on schema public to anon, authenticated, service_role;
+
+-- service_role is the trusted backend (and bypasses RLS): full access.
+grant all on all tables in schema public to service_role;
+grant all on all sequences in schema public to service_role;
+
+-- authenticated / anon on the RLS-governed tables — RLS filters the rows.
+grant select, insert, update, delete on
+  orgs, memberships, checkins, screener_results, assessments, summaries, alerts, audit_log
+  to authenticated;
+grant select on
+  orgs, memberships, checkins, screener_results, assessments, summaries, alerts, audit_log
+  to anon;
+
+-- screeners / screener_items have NO RLS per §6 (see NOTE). Grant read-only to
+-- logged-in users (the catalog the dashboard renders) — NOT writable cross-tenant,
+-- NOT exposed to anon — to keep the §6 gap as small as possible until it is decided.
+grant select on screeners, screener_items to authenticated;
+
 -- NOTE (raised for review — see PR): build-brief §6 does NOT list `screeners` or
 -- `screener_items`, so RLS is intentionally left disabled on them here to match the
 -- spec exactly. `screeners` has an org_id, so without RLS its rows are readable across
--- tenants. Flagged as an open decision rather than diverging from §6 silently.
+-- tenants by any authenticated user (the grant above). Flagged as an open decision
+-- rather than diverging from §6 silently.

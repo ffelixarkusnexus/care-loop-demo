@@ -82,10 +82,12 @@ describe.skipIf(!ready)("RLS — cross-tenant isolation", () => {
 
   afterAll(async () => {
     if (!admin) return;
+    // Guarded so a failed beforeAll can't mask the real error here.
     // FK on delete cascade removes memberships/checkins for each org and user.
-    await admin.from("orgs").delete().in("id", [a.orgId, b.orgId]);
-    await admin.auth.admin.deleteUser(a.userId);
-    await admin.auth.admin.deleteUser(b.userId);
+    const orgIds = [a?.orgId, b?.orgId].filter(Boolean) as string[];
+    if (orgIds.length) await admin.from("orgs").delete().in("id", orgIds);
+    if (a?.userId) await admin.auth.admin.deleteUser(a.userId);
+    if (b?.userId) await admin.auth.admin.deleteUser(b.userId);
   });
 
   it("lets user A read org A's checkin", async () => {
