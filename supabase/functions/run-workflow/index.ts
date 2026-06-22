@@ -19,11 +19,8 @@ import type { ScoredItem } from "@core/schema.ts";
 const MODEL = "claude-opus-4-8";
 const PROMPT_VERSION = "2026-06-22.1";
 
-// The shared core's safety-item logic needs to know which screener item is the
-// designated safety item. The Phase-2 schema has no `is_safety_item` column yet
-// (raised for review — see PR), so for now it is identified by a marker in the
-// item prompt. Replace with a real column when that schema decision is made.
-const SAFETY_ITEM_MARKER = "(safety item)";
+// The designated safety item comes from the explicit `screener_items.is_safety_item`
+// column (ADR-0010) — never inferred from prompt text.
 
 // --- Model client (real Anthropic; injected into the pure core) ----------------
 
@@ -119,12 +116,12 @@ async function perceive(db: SupabaseClient, checkinId: string, orgId?: string) {
 
   const { data: rowsRaw, error: rErr } = await db
     .from("screener_results")
-    .select("score, item_id, screener_items(id, prompt, max_score)")
+    .select("score, item_id, screener_items(id, prompt, max_score, is_safety_item)")
     .eq("member_user_id", checkin.member_user_id)
     .eq("org_id", checkin.org_id);
   if (rErr) throw new Error(`screener_results: ${rErr.message}`);
 
-  type ItemEmbed = { id: string; prompt: string; max_score: number };
+  type ItemEmbed = { id: string; prompt: string; max_score: number; is_safety_item: boolean };
   type ResultRow = { score: number; item_id: string; screener_items: ItemEmbed | ItemEmbed[] | null };
   const rows = (rowsRaw ?? []) as unknown as ResultRow[];
 
@@ -135,7 +132,7 @@ async function perceive(db: SupabaseClient, checkinId: string, orgId?: string) {
       prompt: si?.prompt ?? "",
       score: r.score,
       max_score: si?.max_score ?? 0,
-      is_safety_item: String(si?.prompt ?? "").includes(SAFETY_ITEM_MARKER),
+      is_safety_item: si?.is_safety_item ?? false,
     };
   });
 

@@ -37,6 +37,7 @@ interface Tenant {
   checkinId: string;
   screenerId: string;
   itemId: string;
+  auditId: string;
 }
 
 async function makeTenant(admin: SupabaseClient, label: string): Promise<Tenant> {
@@ -82,6 +83,14 @@ async function makeTenant(admin: SupabaseClient, label: string): Promise<Tenant>
     .single();
   if (itErr) throw itErr;
 
+  // audit_log is system-written: only the service role can insert (ADR-0011).
+  const { data: audit, error: auErr } = await admin
+    .from("audit_log")
+    .insert({ org_id: org.id, actor: "test", action: "seed", entity: "checkin", entity_id: checkin.id })
+    .select()
+    .single();
+  if (auErr) throw auErr;
+
   return {
     orgId: org.id,
     userId,
@@ -89,7 +98,15 @@ async function makeTenant(admin: SupabaseClient, label: string): Promise<Tenant>
     checkinId: checkin.id,
     screenerId: screener.id,
     itemId: item.id,
+    auditId: audit.id,
   };
+}
+
+async function signedInClient(email: string): Promise<SupabaseClient> {
+  const c = createClient(url!, anonKey!, { auth: { persistSession: false } });
+  const { error } = await c.auth.signInWithPassword({ email, password });
+  expect(error).toBeNull();
+  return c;
 }
 
 describe.skipIf(!ready)("RLS — cross-tenant isolation", () => {
@@ -161,5 +178,41 @@ describe.skipIf(!ready)("RLS — cross-tenant isolation", () => {
     const { data, error } = await anon.from("checkins").select("id");
     expect(error).toBeNull();
     expect(data).toEqual([]);
+  });
+
+  it("lets user A read their org's audit_log and zero of org B's", async () => {
+    const userA = await signedInClient(a.email);
+    const { data, error } = await userA.from("audit_log").select("id, org_id");
+    expect(error).toBeNull();
+    expect(data?.some((row) => row.id === a.auditId)).toBe(true);
+    expect(data?.some((row) => row.id === b.auditId)).toBe(false);
+    expect(data?.every((row) => row.org_id === a.orgId)).toBe(true);
+  });
+
+  it("forbids an authenticated user from writing audit_log rows (append-only, system-written)", async () => {
+    const userA = await signedInClient(a.email);
+    const { error } = await userA.from("audit_log").insert({
+      org_id: a.orgId,
+      actor: "forged-by-user",
+      action: "tamper",
+      entity: "checkin",
+      entity_id: a.checkinId,
+    });
+    expect(error).not.toBeNull(); // RLS denies — there is no user INSERT policy
+  });
+});
+
+describe.skipIf(!ready)("schema — safety item designation (ADR-0010)", () => {
+  it("designates exactly the seeded safety item via the is_safety_item column", async () => {
+    const admin = createClient(url!, serviceKey!, { auth: { persistSession: false } });
+    // Scope to the seeded screener so unrelated test fixtures don't affect the count.
+    const { data, error } = await admin
+      .from("screener_items")
+      .select("id, is_safety_item")
+      .eq("screener_id", "20000000-0000-0000-0000-000000000001");
+    expect(error).toBeNull();
+    const flagged = (data ?? []).filter((row) => row.is_safety_item);
+    expect(flagged.length).toBe(1);
+    expect(flagged[0].id).toBe("30000000-0000-0000-0000-000000000006");
   });
 });
