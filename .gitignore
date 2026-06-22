@@ -1,0 +1,9 @@
+# secrets
+.env*
+
+# dependencies / build output
+node_modules/
+.next/
+
+# internal working spec — kept local, not published
+docs/build-brief.md
