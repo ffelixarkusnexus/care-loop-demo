@@ -119,9 +119,13 @@ as $$
   select org_id from public.memberships where user_id = (select auth.uid())
 $$;
 
--- Enable RLS on every tenant-scoped table named in §6.
+-- Enable RLS on EVERY org-scoped table. §6 sketched a subset, but every table that
+-- carries org_id is org-owned, so there is no shared-catalog exception: screeners and
+-- screener_items are protected too (screener_items via its parent screener).
 alter table orgs             enable row level security;
 alter table memberships      enable row level security;
+alter table screeners        enable row level security;
+alter table screener_items   enable row level security;
 alter table checkins         enable row level security;
 alter table screener_results enable row level security;
 alter table assessments      enable row level security;
@@ -138,6 +142,16 @@ create policy memberships_select on memberships
   for select using (org_id in (select app_user_orgs()));
 create policy checkins_select on checkins
   for select using (org_id in (select app_user_orgs()));
+
+-- Screener catalog is org-owned, not shared. screener_items has no org_id, so it
+-- scopes through its parent screener.
+create policy screeners_select on screeners
+  for select using (org_id in (select public.app_user_orgs()));
+create policy screener_items_select on screener_items
+  for select using (screener_id in (
+    select id from public.screeners
+    where org_id in (select public.app_user_orgs())
+  ));
 create policy screener_results_select on screener_results
   for select using (org_id in (select app_user_orgs()));
 create policy audit_log_select on audit_log
@@ -169,19 +183,10 @@ grant all on all sequences in schema public to service_role;
 
 -- authenticated / anon on the RLS-governed tables — RLS filters the rows.
 grant select, insert, update, delete on
-  orgs, memberships, checkins, screener_results, assessments, summaries, alerts, audit_log
+  orgs, memberships, screeners, screener_items, checkins, screener_results,
+  assessments, summaries, alerts, audit_log
   to authenticated;
 grant select on
-  orgs, memberships, checkins, screener_results, assessments, summaries, alerts, audit_log
+  orgs, memberships, screeners, screener_items, checkins, screener_results,
+  assessments, summaries, alerts, audit_log
   to anon;
-
--- screeners / screener_items have NO RLS per §6 (see NOTE). Grant read-only to
--- logged-in users (the catalog the dashboard renders) — NOT writable cross-tenant,
--- NOT exposed to anon — to keep the §6 gap as small as possible until it is decided.
-grant select on screeners, screener_items to authenticated;
-
--- NOTE (raised for review — see PR): build-brief §6 does NOT list `screeners` or
--- `screener_items`, so RLS is intentionally left disabled on them here to match the
--- spec exactly. `screeners` has an org_id, so without RLS its rows are readable across
--- tenants by any authenticated user (the grant above). Flagged as an open decision
--- rather than diverging from §6 silently.

@@ -66,6 +66,21 @@ org-mates'/patients' membership rows within their org. So `memberships` stays or
 Verified: `tests/rls.test.ts` (user A reads zero of org B's rows; anon reads zero) passes against the local
 Supabase stack.
 
-> **Open item (Phase 2):** build-brief §6 does not enable RLS on `screeners` / `screener_items`; `screeners`
-> has an `org_id` and is therefore cross-tenant readable as specified. Implemented to spec and flagged for a
-> separate decision rather than diverging silently.
+### Every `org_id` table is RLS-protected — no shared-catalog exception
+
+build-brief §6 sketched RLS on a subset and omitted `screeners` / `screener_items`. That was reconciled to a
+single rule: **every table that carries `org_id` is org-owned and gets RLS.** `screeners` is scoped by
+`org_id`; `screener_items` has no `org_id`, so it scopes through its parent screener:
+
+```sql
+create policy screeners_select on screeners
+  for select using (org_id in (select public.app_user_orgs()));
+create policy screener_items_select on screener_items
+  for select using (screener_id in (
+    select id from public.screeners where org_id in (select public.app_user_orgs())
+  ));
+```
+
+A screener catalog readable across tenants would be an isolation inconsistency (org-owned data leaking via a
+table that simply wasn't in the original list), so it is **not** treated as a shared catalog. `tests/rls.test.ts`
+proves a user in org A reads zero of org B's screeners and screener_items.

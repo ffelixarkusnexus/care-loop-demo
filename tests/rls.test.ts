@@ -35,6 +35,8 @@ interface Tenant {
   userId: string;
   email: string;
   checkinId: string;
+  screenerId: string;
+  itemId: string;
 }
 
 async function makeTenant(admin: SupabaseClient, label: string): Promise<Tenant> {
@@ -66,7 +68,28 @@ async function makeTenant(admin: SupabaseClient, label: string): Promise<Tenant>
     .single();
   if (ciErr) throw ciErr;
 
-  return { orgId: org.id, userId, email, checkinId: checkin.id };
+  const { data: screener, error: scErr } = await admin
+    .from("screeners")
+    .insert({ org_id: org.id, title: `${label} screener ${stamp}` })
+    .select()
+    .single();
+  if (scErr) throw scErr;
+
+  const { data: item, error: itErr } = await admin
+    .from("screener_items")
+    .insert({ screener_id: screener.id, prompt: `${label} item`, max_score: 3 })
+    .select()
+    .single();
+  if (itErr) throw itErr;
+
+  return {
+    orgId: org.id,
+    userId,
+    email,
+    checkinId: checkin.id,
+    screenerId: screener.id,
+    itemId: item.id,
+  };
 }
 
 describe.skipIf(!ready)("RLS — cross-tenant isolation", () => {
@@ -112,6 +135,25 @@ describe.skipIf(!ready)("RLS — cross-tenant isolation", () => {
     expect(data?.some((row) => row.id === b.checkinId)).toBe(false);
     // And everything A does see belongs to org A.
     expect(data?.every((row) => row.org_id === a.orgId)).toBe(true);
+  });
+
+  it("returns ZERO of org B's screeners and screener_items to user A", async () => {
+    const userA = createClient(url!, anonKey!, { auth: { persistSession: false } });
+    const { error: signInErr } = await userA.auth.signInWithPassword({ email: a.email, password });
+    expect(signInErr).toBeNull();
+
+    const { data: screeners, error: scErr } = await userA.from("screeners").select("id, org_id");
+    expect(scErr).toBeNull();
+    expect(screeners?.some((row) => row.id === a.screenerId)).toBe(true);
+    expect(screeners?.some((row) => row.id === b.screenerId)).toBe(false);
+    expect(screeners?.every((row) => row.org_id === a.orgId)).toBe(true);
+
+    // screener_items has no org_id; isolation flows through the parent screener.
+    const { data: items, error: itErr } = await userA.from("screener_items").select("id, screener_id");
+    expect(itErr).toBeNull();
+    expect(items?.some((row) => row.id === a.itemId)).toBe(true);
+    expect(items?.some((row) => row.id === b.itemId)).toBe(false);
+    expect(items?.every((row) => row.screener_id === a.screenerId)).toBe(true);
   });
 
   it("returns ZERO checkins to an unauthenticated (anon) client", async () => {
