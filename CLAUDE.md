@@ -3,6 +3,10 @@
 > The working agreement for this repo — the contract between the accountable human, the design/decision
 > surface, and Claude Code (the implementation surface). This is the project-specific, authoritative version.
 > Read it before doing anything.
+>
+> **Precedence:** CLAUDE.md is the authoritative working agreement and wins on any process or safety conflict.
+> `AGENTS.md` (generated) supplies Next.js / tooling conventions only and never overrides the non-negotiables
+> below.
 
 ## Who decides what (roles)
 - **Francisco — accountable human.** Every non-trivial decision and every merge is his. Nothing reaches `main`
