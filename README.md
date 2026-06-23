@@ -1,5 +1,7 @@
 # Care Loop — an agentic behavioral-health workflow demo
 
+[![CI](https://github.com/ffelixarkusnexus/care-loop-demo/actions/workflows/ci.yml/badge.svg)](https://github.com/ffelixarkusnexus/care-loop-demo/actions/workflows/ci.yml)
+
 A demo I built hands-on in Next.js + TypeScript + React + Supabase (with Row-Level Security and an Edge
 Function) to model an agentic behavioral-health workflow: it perceives check-in data, reasons over it with
 Claude, drafts a clinician summary, and runs a reflection pass that validates the draft before a human reviews
@@ -78,7 +80,11 @@ the code that follows can reference a settled rationale.
   posture per ADR-0006.
 - [x] **Phase 4 — Dashboard + patient review UI.** Clinician triage list (RLS-scoped, risk-ordered) and a
   dual-pane review with cited-item links and clinician sign-off; "Run workflow" invokes the edge function.
-- [ ] **Phase 5 — Eval harness + CI.**
+- [x] **Phase 5 — Eval harness + CI.** [`eval/`](eval/) runs the orchestrator over fixed scenarios against the
+  injected stub (no key, no network), asserting invariants not wording;
+  [GitHub Actions](.github/workflows/ci.yml) runs typecheck + lint + build + unit + eval on every push, plus a
+  separate job that boots a real Supabase stack to **prove tenant isolation in CI**. The live model run stays
+  out of CI by design (no secrets in CI).
 
 ## Screenshots
 
