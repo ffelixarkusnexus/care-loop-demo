@@ -43,3 +43,6 @@ next-env.d.ts
 
 # internal working spec — kept local, not published
 docs/build-brief.md
+
+# local preview/editor tooling
+.claude/

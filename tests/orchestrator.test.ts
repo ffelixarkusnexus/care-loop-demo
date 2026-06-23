@@ -86,6 +86,16 @@ describe("runWorkflow — deterministic gate has authority over the model", () =
     expect(r.alert).toBe(true);
     expect(r.status).toBe("needs_manual_review");
   });
+
+  it("audits an alert raised by the gate's escalation (model caution), not just tier/safety", async () => {
+    const data = perceived([1, 1, 1, 0, 0], 0); // stable, safety calm → no data-driven alert
+    const cautious = { ...validAssessment, needs_manual_review: true };
+    const model = stubModel(cautious, { summary_md: "- Mood is low but steady.", cited_item_ids: ["i0"] });
+    const r = await runWorkflow(data, model);
+    expect(r.alert).toBe(true); // model caution → gate escalates → alert
+    expect(r.status).toBe("needs_manual_review");
+    expect(r.audit.some((e) => e.phase === "reflection" && e.action === "alert_created")).toBe(true);
+  });
 });
 
 describe("runWorkflow — urgent tier escalates", () => {

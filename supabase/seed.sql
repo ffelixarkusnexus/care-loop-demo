@@ -53,14 +53,14 @@ insert into screener_items (id, screener_id, prompt, max_score, is_safety_item) 
 
 -- --- A week of check-ins for patient one, with screener results ------------------
 -- Declining mood over the week; safety item stays at 0 in the seed.
-insert into checkins (org_id, member_user_id, mood, note, created_at) values
-  ('10000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000001', 4, 'Felt okay today.', now() - interval '6 days'),
-  ('10000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000001', 3, 'A bit tired.', now() - interval '5 days'),
-  ('10000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000001', 3, 'Hard to focus at work.', now() - interval '4 days'),
-  ('10000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000001', 2, 'Did not sleep well.', now() - interval '3 days'),
-  ('10000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000001', 2, 'Low energy all day.', now() - interval '2 days'),
-  ('10000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000001', 2, 'Feeling on edge.', now() - interval '1 days'),
-  ('10000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000001', 1, 'Rough day.', now());
+insert into checkins (id, org_id, member_user_id, mood, note, created_at) values
+  ('40000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000001', 4, 'Felt okay today.', now() - interval '6 days'),
+  ('40000000-0000-0000-0000-000000000002', '10000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000001', 3, 'A bit tired.', now() - interval '5 days'),
+  ('40000000-0000-0000-0000-000000000003', '10000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000001', 3, 'Hard to focus at work.', now() - interval '4 days'),
+  ('40000000-0000-0000-0000-000000000004', '10000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000001', 2, 'Did not sleep well.', now() - interval '3 days'),
+  ('40000000-0000-0000-0000-000000000005', '10000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000001', 2, 'Low energy all day.', now() - interval '2 days'),
+  ('40000000-0000-0000-0000-000000000006', '10000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000001', 2, 'Feeling on edge.', now() - interval '1 days'),
+  ('40000000-0000-0000-0000-000000000007', '10000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000001', 1, 'Rough day.', now());
 
 -- Latest screener results for patient one (rising symptom scores; safety item = 0).
 insert into screener_results (org_id, member_user_id, item_id, score, created_at) values
@@ -70,3 +70,20 @@ insert into screener_results (org_id, member_user_id, item_id, score, created_at
   ('10000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000004', 2, now()),
   ('10000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000005', 1, now()),
   ('10000000-0000-0000-0000-000000000001', 'b0000000-0000-0000-0000-000000000001', '30000000-0000-0000-0000-000000000006', 0, now());
+
+-- Illustrative AI draft, seeded so the dashboard + dual-pane review have content
+-- WITHOUT a live model run (model = 'seed'). "Run workflow" produces a genuine draft.
+-- The cited fractions match the seeded item scores (3/3, 2/3, 0/3).
+insert into assessments (org_id, checkin_id, signals, model_risk, confidence, needs_manual_review, prompt_version) values
+  ('10000000-0000-0000-0000-000000000001', '40000000-0000-0000-0000-000000000007',
+   '[{"kind":"symptom_increase","note":"anxiety and sleep worsening over the week","item_ids":["30000000-0000-0000-0000-000000000002","30000000-0000-0000-0000-000000000003"]}]'::jsonb,
+   'action_required', 'medium', false, 'seed');
+
+insert into summaries (org_id, checkin_id, risk_tier, summary_md, cited_item_ids, status, model, prompt_version) values
+  ('10000000-0000-0000-0000-000000000001', '40000000-0000-0000-0000-000000000007',
+   'action_required',
+   '- Anxiety reached 3/3 this week, the highest-scored item.
+- Sleep difficulty at 2/3, consistent with the check-in note.
+- Mood trended down across the week; the safety item is 0/3, no acute safety concern.',
+   '["30000000-0000-0000-0000-000000000002","30000000-0000-0000-0000-000000000003","30000000-0000-0000-0000-000000000006"]'::jsonb,
+   'staged_for_review', 'seed', 'seed');
