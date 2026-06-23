@@ -42,13 +42,14 @@ insert into screeners (id, org_id, title) values
   ('20000000-0000-0000-0000-000000000001', '10000000-0000-0000-0000-000000000001',
    'Weekly Well-being Check');
 
-insert into screener_items (id, screener_id, prompt, max_score) values
-  ('30000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000001', 'Low mood or loss of interest', 3),
-  ('30000000-0000-0000-0000-000000000002', '20000000-0000-0000-0000-000000000001', 'Feeling anxious or on edge', 3),
-  ('30000000-0000-0000-0000-000000000003', '20000000-0000-0000-0000-000000000001', 'Trouble sleeping', 3),
-  ('30000000-0000-0000-0000-000000000004', '20000000-0000-0000-0000-000000000001', 'Low energy or fatigue', 3),
-  ('30000000-0000-0000-0000-000000000005', '20000000-0000-0000-0000-000000000001', 'Difficulty concentrating', 3),
-  ('30000000-0000-0000-0000-000000000006', '20000000-0000-0000-0000-000000000001', 'Thoughts that you would be better off not here (safety item)', 3);
+-- The safety item is designated by the is_safety_item column, not by its prompt text.
+insert into screener_items (id, screener_id, prompt, max_score, is_safety_item) values
+  ('30000000-0000-0000-0000-000000000001', '20000000-0000-0000-0000-000000000001', 'Low mood or loss of interest', 3, false),
+  ('30000000-0000-0000-0000-000000000002', '20000000-0000-0000-0000-000000000001', 'Feeling anxious or on edge', 3, false),
+  ('30000000-0000-0000-0000-000000000003', '20000000-0000-0000-0000-000000000001', 'Trouble sleeping', 3, false),
+  ('30000000-0000-0000-0000-000000000004', '20000000-0000-0000-0000-000000000001', 'Low energy or fatigue', 3, false),
+  ('30000000-0000-0000-0000-000000000005', '20000000-0000-0000-0000-000000000001', 'Difficulty concentrating', 3, false),
+  ('30000000-0000-0000-0000-000000000006', '20000000-0000-0000-0000-000000000001', 'Thoughts of being better off not here', 3, true);
 
 -- --- A week of check-ins for patient one, with screener results ------------------
 -- Declining mood over the week; safety item stays at 0 in the seed.

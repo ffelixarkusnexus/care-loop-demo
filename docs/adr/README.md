@@ -23,3 +23,6 @@ The two that best show the engineering judgment:
 | [0006](0006-edge-function-and-auth-posture.md) | Edge Function invocation and auth posture | Accepted |
 | [0007](0007-shared-core-across-deno-node-boundary.md) | Shared pure-logic core across the Deno/Node boundary | Accepted |
 | [0008](0008-illustrative-non-clinical-thresholds.md) | Scoring/safety thresholds are illustrative, non-clinical defaults | Accepted |
+| [0009](0009-model-client-injection-and-secrets.md) | Dependency-inject the model client; keep the API key out of tests/CI | Accepted |
+| [0010](0010-safety-designations-from-schema.md) | Safety-critical designations come from explicit schema, never inferred from text | Accepted |
+| [0011](0011-audit-log-append-only-system-written.md) | Audit log is append-only and system-written; users read-only | Accepted |

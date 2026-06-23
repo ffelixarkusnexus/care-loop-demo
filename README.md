@@ -71,7 +71,11 @@ the code that follows can reference a settled rationale.
   Vitest unit tests including the four reflect cases (hallucinated id, dropped critical item, number/risk
   mismatch, "model confident but blocked").
 - [ ] **Phase 2 — Database.** Migrations, RLS policies, seed, cross-tenant test.
-- [ ] **Phase 3 — Edge function orchestrator.** The four-phase Deno function, two validated Claude calls.
+- [x] **Phase 3 — Edge function orchestrator.** The four-phase Deno function
+  ([`run-workflow`](supabase/functions/run-workflow/index.ts)) importing the shared core unchanged via a
+  `deno.json` import map (ADR-0007); the pure pipeline ([`orchestrator.ts`](src/lib/shared/orchestrator.ts))
+  with a dependency-injected model client — stub in tests, real Anthropic at the boundary (ADR-0009); auth
+  posture per ADR-0006.
 - [ ] **Phase 4 — Dashboard + patient review UI.**
 - [ ] **Phase 5 — Eval harness + CI.**
 
