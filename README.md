@@ -12,11 +12,48 @@ AI-native: I own the architecture and directed the implementation.
 > and a reasonable read of how such platforms work — it is **modeled, not insider knowledge** of any company's
 > internals. It is a **demo, not clinical software**, and gives no diagnosis or medical advice.
 
+## What this is — and what I'd build next
+
+I built this in about a day, AI-native: I directed the implementation and own every
+decision; the eight ADRs are mine. It is scoped from a public job description and a
+general read of how such platforms work — so it demonstrates approach, architecture,
+and safety judgment, and how I ramp and ship in a new stack quickly. It is **not** a
+production system, and it is **not** years of tenure in this stack: I deliver in
+TypeScript / React / Next.js AI-native, and Supabase was new to me when I started.
+
+**Deliberately scoped out (and why):** a real clinical-instrument library, EHR / FHIR
+integration, real notification delivery (simulated — ADR-0005), a hosted deployment
+(runs locally), and anything touching real PHI. Thresholds are illustrative, not
+clinically validated (ADR-0008).
+
+**What I'd do to make it production-grade** (so it's clear I know where the edges are):
+- Validate the screening instruments and every threshold with clinical experts —
+  nothing here is clinically validated.
+- Evaluate the safety gate beyond invariants: adversarial prompts + labeled data +
+  human review. The banned lexicon and numeric checks are deliberately simple and
+  necessarily incomplete.
+- Enforce the audit log as append-only at the database level (trigger / revoked
+  privileges), not only by policy (ADR-0011).
+- Real authn/authz, clinical roles, provider–patient relationships, and consent —
+  beyond the demo's clinician/member.
+- EHR / FHIR integration; a richer, longitudinal patient and instrument model.
+- Hosted deployment with BAAs, encryption-at-rest config, and the SOC 2 controls a
+  HIPAA system needs.
+- Scale + reliability for the model pipeline: queueing, idempotency/retries,
+  rate-limiting, and observability (metrics/tracing/alerting) beyond the audit trail.
+- Real notification delivery (Slack / Teams / email) — a small, known add.
+
+The deterministic gate blocks on any detected violation and the model has no authority
+over what reaches a clinician; the true fail-closed backstop is that **nothing reaches
+`final` without a human sign-off.**
+
 **For reviewers:** the *why* behind every non-obvious decision is in [`docs/adr/`](docs/adr/). The two that
 best show the engineering judgment are **[ADR-0004](docs/adr/0004-reflection-gate-is-deterministic.md)** (the
 deterministic patient-safety gate — why the model is given no authority over what reaches a clinician) and
 **[ADR-0007](docs/adr/0007-shared-core-across-deno-node-boundary.md)** (the Deno/Node runtime boundary — why
-one shared source of truth, and why the harder edge-function path was chosen deliberately).
+one shared source of truth, and why the harder edge-function path was chosen deliberately). See also
+**[ADR-0012](docs/adr/0012-scope-assumptions-and-limitations.md)** — the honest record of scope, assumptions,
+and limitations.
 
 ---
 
