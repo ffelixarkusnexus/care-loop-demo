@@ -126,3 +126,7 @@ placeholder) and serve the edge function with that env file — locally the key 
 echo "ANTHROPIC_API_KEY=sk-ant-..." >> .env.local
 npx supabase functions serve run-workflow --env-file .env.local   # separate terminal
 ```
+
+> **Live deployment is deferred by choice.** The app runs locally per the steps above. A hosted URL would need a
+> hosted Supabase project, a production model key, and an edge-function deploy — a known, scoped follow-up
+> intentionally left out of this demo (ADR-0005), not a missing capability.
