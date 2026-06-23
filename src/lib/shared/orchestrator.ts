@@ -99,6 +99,10 @@ export async function runWorkflow(data: PerceivedData, model: ModelClient): Prom
     phase: "reflection",
     action: reflection.decision === "allow" ? "passed_staged_for_review" : "blocked_needs_manual_review",
   });
+  // An alert raised by the gate's escalation (not by tier/safety) is also audited.
+  if (reflection.escalate && !dataDrivenAlert) {
+    audit.push({ phase: "reflection", action: "alert_created" });
+  }
 
   return {
     status,

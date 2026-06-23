@@ -17,7 +17,7 @@ import { runWorkflow, type ModelClient, type PerceivedData } from "@core/orchest
 import type { ScoredItem } from "@core/schema.ts";
 
 const MODEL = "claude-opus-4-8";
-const PROMPT_VERSION = "2026-06-22.1";
+const PROMPT_VERSION = "2026-06-22.2";
 
 // The designated safety item comes from the explicit `screener_items.is_safety_item`
 // column (ADR-0010) — never inferred from prompt text.
@@ -64,10 +64,13 @@ const SUMMARY_TOOL = {
 } as const;
 
 const SYSTEM_PROMPT =
-  "You summarize behavioral-health check-ins for a clinician. Be factual and concise. " +
+  "You summarize behavioral-health check-ins for a clinician. " +
+  "Write 3–5 short Markdown bullets ('- '), each a single line. " +
+  "The entire summary_md MUST be under 600 characters. " +
+  "Put the screener item ids you reference in the cited_item_ids field, using only ids shown in the data. " +
   "Do NOT diagnose, do NOT recommend or change medication, and do NOT give the patient " +
-  "second-person advice. Cite specific screener item ids. The official risk tier is computed " +
-  "separately in code — describe the data, do not assert a risk level the code did not compute.";
+  "second-person advice. The official risk tier is computed separately in code — describe the data, " +
+  "do not assert a risk level the code did not compute.";
 
 function toolInput(message: Anthropic.Message, name: string): unknown {
   const block = message.content.find((b) => b.type === "tool_use" && b.name === name);
@@ -179,11 +182,12 @@ async function persist(
   });
 
   if (result.alert) {
-    await db.from("alerts").insert({
-      org_id,
-      member_user_id: checkin.member_user_id,
-      reason: result.score.tier === "urgent" ? "urgent risk tier" : "safety item over cutoff",
-    });
+    const reason = result.score.safetyItemTriggered
+      ? "safety item over cutoff"
+      : result.score.tier === "urgent"
+        ? "urgent risk tier"
+        : "escalated by reflection gate";
+    await db.from("alerts").insert({ org_id, member_user_id: checkin.member_user_id, reason });
   }
 
   // audit_log: written via the service role (no insert policy on the user path).

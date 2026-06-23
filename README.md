@@ -108,14 +108,15 @@ Run the full app against a local Supabase stack (Docker required):
 npx supabase start                       # boots Postgres + Auth, applies migrations + seed
 # copy the printed API URL + anon + service_role keys into .env.local:
 #   NEXT_PUBLIC_SUPABASE_URL=...  NEXT_PUBLIC_SUPABASE_ANON_KEY=...  SUPABASE_SERVICE_ROLE_KEY=...
-npx supabase functions serve run-workflow   # serve the edge function (separate terminal)
 npm run dev                              # http://localhost:3000
 # sign in as the seeded clinician: clinician@careloop.test / demo-password
 ```
 
-For a live "Run workflow" call, set the model secret (never commit it; `.env.example` keeps a placeholder):
+For a live "Run workflow" call, add your Anthropic key to `.env.local` (never commit it; `.env.example` keeps a
+placeholder) and serve the edge function with that env file — locally the key is passed via `--env-file`, **not**
+`supabase secrets set` (which targets a hosted project):
 
 ```bash
 echo "ANTHROPIC_API_KEY=sk-ant-..." >> .env.local
-npx supabase secrets set ANTHROPIC_API_KEY=sk-ant-...
+npx supabase functions serve run-workflow --env-file .env.local   # separate terminal
 ```
