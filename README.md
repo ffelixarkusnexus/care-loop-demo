@@ -70,24 +70,52 @@ the code that follows can reference a settled rationale.
   [`reflect.ts`](src/lib/shared/reflect.ts)) with thresholds in [`config/thresholds.ts`](config/thresholds.ts);
   Vitest unit tests including the four reflect cases (hallucinated id, dropped critical item, number/risk
   mismatch, "model confident but blocked").
-- [ ] **Phase 2 — Database.** Migrations, RLS policies, seed, cross-tenant test.
+- [x] **Phase 2 — Database.** Migrations, RLS on every org-scoped table, seed, and a passing cross-tenant test.
 - [x] **Phase 3 — Edge function orchestrator.** The four-phase Deno function
   ([`run-workflow`](supabase/functions/run-workflow/index.ts)) importing the shared core unchanged via a
   `deno.json` import map (ADR-0007); the pure pipeline ([`orchestrator.ts`](src/lib/shared/orchestrator.ts))
   with a dependency-injected model client — stub in tests, real Anthropic at the boundary (ADR-0009); auth
   posture per ADR-0006.
-- [ ] **Phase 4 — Dashboard + patient review UI.**
+- [x] **Phase 4 — Dashboard + patient review UI.** Clinician triage list (RLS-scoped, risk-ordered) and a
+  dual-pane review with cited-item links and clinician sign-off; "Run workflow" invokes the edge function.
 - [ ] **Phase 5 — Eval harness + CI.**
+
+## Screenshots
+
+> Synthetic demo data — no real PHI.
+
+**Triage dashboard** (RLS-scoped, ordered by risk tier):
+
+![Triage dashboard](docs/screenshots/dashboard.png)
+
+**Dual-pane review** — raw check-in + screener history on the left; the AI draft (validated by the
+deterministic gate) with cited-item links and clinician sign-off on the right:
+
+![Dual-pane review](docs/screenshots/review.png)
 
 ## Getting started
 
 ```bash
 npm install
-npm run dev          # Next.js dev server
-npm test             # Vitest unit tests (scoring + reflect + schema)
+npm test             # Vitest: scoring + reflect + schema (+ RLS when a stack is up)
 npm run typecheck    # tsc --noEmit (strict)
 npm run lint         # eslint
 ```
 
-> Supabase setup (migrations, RLS, seed) and the edge function arrive in Phases 2–3; Supabase-specific run
-> steps will be documented alongside them rather than before the code that backs them exists.
+Run the full app against a local Supabase stack (Docker required):
+
+```bash
+npx supabase start                       # boots Postgres + Auth, applies migrations + seed
+# copy the printed API URL + anon + service_role keys into .env.local:
+#   NEXT_PUBLIC_SUPABASE_URL=...  NEXT_PUBLIC_SUPABASE_ANON_KEY=...  SUPABASE_SERVICE_ROLE_KEY=...
+npx supabase functions serve run-workflow   # serve the edge function (separate terminal)
+npm run dev                              # http://localhost:3000
+# sign in as the seeded clinician: clinician@careloop.test / demo-password
+```
+
+For a live "Run workflow" call, set the model secret (never commit it; `.env.example` keeps a placeholder):
+
+```bash
+echo "ANTHROPIC_API_KEY=sk-ant-..." >> .env.local
+npx supabase secrets set ANTHROPIC_API_KEY=sk-ant-...
+```
