@@ -26,3 +26,4 @@ The two that best show the engineering judgment:
 | [0009](0009-model-client-injection-and-secrets.md) | Dependency-inject the model client; keep the API key out of tests/CI | Accepted |
 | [0010](0010-safety-designations-from-schema.md) | Safety-critical designations come from explicit schema, never inferred from text | Accepted |
 | [0011](0011-audit-log-append-only-system-written.md) | Audit log is append-only and system-written; users read-only | Accepted |
+| [0012](0012-scope-assumptions-and-limitations.md) | Scope, assumptions, and limitations (a ~1-day AI-native demo) | Accepted |
