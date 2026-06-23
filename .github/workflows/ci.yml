@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    name: typecheck · lint · build · unit + eval
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run build
+      # Unit + eval run against the injected stub — no Supabase stack, no Anthropic key.
+      # tests/rls.test.ts auto-skips when no stack env is present.
+      - run: npm test
+
+  rls:
+    name: cross-tenant RLS (real Supabase stack)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Start local Supabase (Docker on the runner)
+        run: npx supabase start
+      - name: Prove tenant isolation against the stack
+        run: |
+          eval "$(npx supabase status -o env)"
+          export NEXT_PUBLIC_SUPABASE_URL="$API_URL"
+          export NEXT_PUBLIC_SUPABASE_ANON_KEY="$ANON_KEY"
+          export SUPABASE_SERVICE_ROLE_KEY="$SERVICE_ROLE_KEY"
+          npx vitest run tests/rls.test.ts
+      - name: Stop Supabase
+        if: always()
+        run: npx supabase stop
+
+# The live model run is intentionally NOT in CI: it needs a real ANTHROPIC_API_KEY,
+# and CI must run without secrets. The pipeline logic is fully covered by the eval
+# (stub) job above; the live run is exercised locally (see README).

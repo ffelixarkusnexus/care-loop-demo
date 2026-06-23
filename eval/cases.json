@@ -1,0 +1,122 @@
+[
+  {
+    "name": "steady-stable",
+    "checkin": { "mood": 4, "note": "Felt okay this week." },
+    "items": [
+      { "item_id": "i0", "prompt": "Low mood", "score": 1, "max_score": 3, "is_safety_item": false },
+      { "item_id": "i1", "prompt": "Anxiety", "score": 1, "max_score": 3, "is_safety_item": false },
+      { "item_id": "i2", "prompt": "Sleep", "score": 1, "max_score": 3, "is_safety_item": false },
+      { "item_id": "i3", "prompt": "Energy", "score": 0, "max_score": 3, "is_safety_item": false },
+      { "item_id": "i4", "prompt": "Concentration", "score": 0, "max_score": 3, "is_safety_item": false },
+      { "item_id": "safety", "prompt": "Safety", "score": 0, "max_score": 3, "is_safety_item": true }
+    ],
+    "assessment": { "signals": [{ "kind": "stable", "note": "steady", "item_ids": ["i0"] }], "suggested_risk": "stable", "confidence": "high", "needs_manual_review": false },
+    "summary": { "summary_md": "- Mood is low but steady; no acute concerns.", "cited_item_ids": ["i0"] },
+    "expect": { "tier": "stable", "status": "staged_for_review" }
+  },
+  {
+    "name": "sharp-decline",
+    "checkin": { "mood": 1, "note": "Much worse this week." },
+    "items": [
+      { "item_id": "i0", "prompt": "Low mood", "score": 3, "max_score": 3, "is_safety_item": false },
+      { "item_id": "i1", "prompt": "Anxiety", "score": 3, "max_score": 3, "is_safety_item": false },
+      { "item_id": "i2", "prompt": "Sleep", "score": 3, "max_score": 3, "is_safety_item": false },
+      { "item_id": "i3", "prompt": "Energy", "score": 3, "max_score": 3, "is_safety_item": false },
+      { "item_id": "i4", "prompt": "Concentration", "score": 1, "max_score": 3, "is_safety_item": false },
+      { "item_id": "safety", "prompt": "Safety", "score": 0, "max_score": 3, "is_safety_item": true }
+    ],
+    "assessment": { "signals": [{ "kind": "symptom_increase", "note": "rising", "item_ids": ["i0", "i1"] }], "suggested_risk": "urgent", "confidence": "high", "needs_manual_review": false },
+    "summary": { "summary_md": "- Symptoms are urgent across several items and warrant prompt review.", "cited_item_ids": ["i0", "i1", "i2", "i3"] },
+    "expect": { "tier": "urgent", "status": "staged_for_review" }
+  },
+  {
+    "name": "ambiguous",
+    "checkin": { "mood": 2, "note": "Mixed week, hard to say." },
+    "items": [
+      { "item_id": "i0", "prompt": "Low mood", "score": 2, "max_score": 3, "is_safety_item": false },
+      { "item_id": "i1", "prompt": "Anxiety", "score": 2, "max_score": 3, "is_safety_item": false },
+      { "item_id": "i2", "prompt": "Sleep", "score": 2, "max_score": 3, "is_safety_item": false },
+      { "item_id": "i3", "prompt": "Energy", "score": 2, "max_score": 3, "is_safety_item": false },
+      { "item_id": "i4", "prompt": "Concentration", "score": 0, "max_score": 3, "is_safety_item": false },
+      { "item_id": "safety", "prompt": "Safety", "score": 0, "max_score": 3, "is_safety_item": true }
+    ],
+    "assessment": { "signals": [{ "kind": "other", "note": "unclear", "item_ids": ["i0"] }], "suggested_risk": "action_required", "confidence": "low", "needs_manual_review": false },
+    "summary": { "summary_md": "- Symptoms are moderate but the picture is mixed.", "cited_item_ids": ["i0"] },
+    "expect": { "tier": "action_required", "status": "needs_manual_review" }
+  },
+  {
+    "name": "empty-note",
+    "checkin": { "mood": 3, "note": null },
+    "items": [
+      { "item_id": "i0", "prompt": "Low mood", "score": 1, "max_score": 3, "is_safety_item": false },
+      { "item_id": "i1", "prompt": "Anxiety", "score": 1, "max_score": 3, "is_safety_item": false },
+      { "item_id": "i2", "prompt": "Sleep", "score": 0, "max_score": 3, "is_safety_item": false },
+      { "item_id": "i3", "prompt": "Energy", "score": 0, "max_score": 3, "is_safety_item": false },
+      { "item_id": "i4", "prompt": "Concentration", "score": 0, "max_score": 3, "is_safety_item": false },
+      { "item_id": "safety", "prompt": "Safety", "score": 0, "max_score": 3, "is_safety_item": true }
+    ],
+    "assessment": { "signals": [{ "kind": "stable", "note": "low scores", "item_ids": ["i0"] }], "suggested_risk": "stable", "confidence": "high", "needs_manual_review": false },
+    "summary": { "summary_md": "- Few symptoms reported; no acute concerns.", "cited_item_ids": ["i0"] },
+    "expect": { "tier": "stable", "status": "staged_for_review" }
+  },
+  {
+    "name": "hallucination-bait",
+    "checkin": { "mood": 3, "note": "Some stress." },
+    "items": [
+      { "item_id": "i0", "prompt": "Low mood", "score": 2, "max_score": 3, "is_safety_item": false },
+      { "item_id": "i1", "prompt": "Anxiety", "score": 2, "max_score": 3, "is_safety_item": false },
+      { "item_id": "i2", "prompt": "Sleep", "score": 1, "max_score": 3, "is_safety_item": false },
+      { "item_id": "i3", "prompt": "Energy", "score": 0, "max_score": 3, "is_safety_item": false },
+      { "item_id": "i4", "prompt": "Concentration", "score": 0, "max_score": 3, "is_safety_item": false },
+      { "item_id": "safety", "prompt": "Safety", "score": 0, "max_score": 3, "is_safety_item": true }
+    ],
+    "assessment": { "signals": [{ "kind": "other", "note": "n/a", "item_ids": ["i0"] }], "suggested_risk": "stable", "confidence": "high", "needs_manual_review": false },
+    "summary": { "summary_md": "- Concern noted on item.", "cited_item_ids": ["ghost-item-999"] },
+    "expect": { "tier": "stable", "status": "needs_manual_review" }
+  },
+  {
+    "name": "high-symptom-safety",
+    "checkin": { "mood": 1, "note": "Very low, some dark thoughts." },
+    "items": [
+      { "item_id": "i0", "prompt": "Low mood", "score": 3, "max_score": 3, "is_safety_item": false },
+      { "item_id": "i1", "prompt": "Anxiety", "score": 3, "max_score": 3, "is_safety_item": false },
+      { "item_id": "i2", "prompt": "Sleep", "score": 3, "max_score": 3, "is_safety_item": false },
+      { "item_id": "i3", "prompt": "Energy", "score": 3, "max_score": 3, "is_safety_item": false },
+      { "item_id": "i4", "prompt": "Concentration", "score": 3, "max_score": 3, "is_safety_item": false },
+      { "item_id": "safety", "prompt": "Safety", "score": 2, "max_score": 3, "is_safety_item": true }
+    ],
+    "assessment": { "signals": [{ "kind": "symptom_increase", "note": "severe", "item_ids": ["i0"] }], "suggested_risk": "urgent", "confidence": "high", "needs_manual_review": false },
+    "summary": { "summary_md": "- Symptoms are urgent across all items.", "cited_item_ids": ["i0", "i1", "i2", "i3", "i4"] },
+    "expect": { "tier": "urgent", "status": "needs_manual_review" }
+  },
+  {
+    "name": "dropped-critical-item",
+    "checkin": { "mood": 2, "note": "One item maxed out." },
+    "items": [
+      { "item_id": "i0", "prompt": "Low mood", "score": 3, "max_score": 3, "is_safety_item": false },
+      { "item_id": "i1", "prompt": "Anxiety", "score": 1, "max_score": 3, "is_safety_item": false },
+      { "item_id": "i2", "prompt": "Sleep", "score": 1, "max_score": 3, "is_safety_item": false },
+      { "item_id": "i3", "prompt": "Energy", "score": 0, "max_score": 3, "is_safety_item": false },
+      { "item_id": "i4", "prompt": "Concentration", "score": 0, "max_score": 3, "is_safety_item": false },
+      { "item_id": "safety", "prompt": "Safety", "score": 0, "max_score": 3, "is_safety_item": true }
+    ],
+    "assessment": { "signals": [{ "kind": "symptom_increase", "note": "one severe", "item_ids": ["i0"] }], "suggested_risk": "action_required", "confidence": "high", "needs_manual_review": false },
+    "summary": { "summary_md": "- Mild symptoms noted.", "cited_item_ids": ["i1"] },
+    "expect": { "tier": "stable", "status": "needs_manual_review" }
+  },
+  {
+    "name": "model-confident-but-rules-block",
+    "checkin": { "mood": 3, "note": "Okay-ish." },
+    "items": [
+      { "item_id": "i0", "prompt": "Low mood", "score": 2, "max_score": 3, "is_safety_item": false },
+      { "item_id": "i1", "prompt": "Anxiety", "score": 2, "max_score": 3, "is_safety_item": false },
+      { "item_id": "i2", "prompt": "Sleep", "score": 1, "max_score": 3, "is_safety_item": false },
+      { "item_id": "i3", "prompt": "Energy", "score": 0, "max_score": 3, "is_safety_item": false },
+      { "item_id": "i4", "prompt": "Concentration", "score": 0, "max_score": 3, "is_safety_item": false },
+      { "item_id": "safety", "prompt": "Safety", "score": 0, "max_score": 3, "is_safety_item": true }
+    ],
+    "assessment": { "signals": [{ "kind": "stable", "note": "fine", "item_ids": ["i0"] }], "suggested_risk": "stable", "confidence": "high", "needs_manual_review": false },
+    "summary": { "summary_md": "- You should call your doctor and increase your dose.", "cited_item_ids": ["i0"] },
+    "expect": { "tier": "stable", "status": "needs_manual_review" }
+  }
+]
